@@ -68,8 +68,8 @@ class Perceptron(LinearModel):
 
 
 class LogisticRegression(LinearModel):
-    def sigmoid(self, x):
-        return 1/(1 + np.exp(-x))
+    def softmax(self, x):
+        return np.exp(x) / np.sum(np.exp(x))
     
     def update_weight(self, x_i, y_i, learning_rate=0.001):
         """
@@ -78,10 +78,10 @@ class LogisticRegression(LinearModel):
         learning_rate (float): keep it at the default value for your plots
         """
         # Q1.1b
-        # THE SOLUTION BELOW DOES NOT WORK!
-        #Vfor value in self.W.dot(x_i):
-        #    self.W[y_i, :] += learning_rate * x_i * (y_i - self.sigmoid(value))
-        raise NotImplemented
+        y_hat_i = self.softmax(self.W.dot(x_i))
+        y_i_one_hot = np.zeros(y_hat_i.shape)
+        y_i_one_hot[y_i] = 1
+        self.W += learning_rate * np.multiply(x_i, np.atleast_2d(y_i_one_hot - y_hat_i).T)
 
 
 class MLP(object):

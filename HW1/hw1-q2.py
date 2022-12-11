@@ -27,6 +27,8 @@ class LogisticRegression(nn.Module):
         https://pytorch.org/docs/stable/nn.html
         """
         super().__init__()
+        self.W = nn.Parameter(torch.zeros(n_classes, n_features))
+        self.b = nn.Parameter(torch.zeros(1, n_classes))
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
 
@@ -44,7 +46,7 @@ class LogisticRegression(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        raise NotImplementedError
+        return torch.add(torch.linalg.matmul(self.W, x), self.b)
 
 
 # Q2.2
@@ -96,7 +98,14 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     This function should return the loss (tip: call loss.item()) to get the
     loss as a numerical value that is not part of the computation graph.
     """
-    raise NotImplementedError
+    for input, target in zip(X, y):
+        output = model(input)
+        one_hot = torch.zeros(output.shape)
+        one_hot[0][target] = 1
+        loss = criterion(output, one_hot)
+        loss.backward()
+        optimizer.step()
+    return loss.item()
 
 
 def predict(model, X):
@@ -176,7 +185,7 @@ def main():
 
     # get an optimizer
     optims = {"adam": torch.optim.Adam, "sgd": torch.optim.SGD}
-
+    
     optim_cls = optims[opt.optimizer]
     optimizer = optim_cls(
         model.parameters(),
