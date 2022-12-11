@@ -17,6 +17,9 @@ def configure_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
 
+def relu(x):
+	return (np.maximum(0, x))
+
 
 class LinearModel(object):
     def __init__(self, n_classes, n_features, **kwargs):
@@ -78,7 +81,7 @@ class LogisticRegression(LinearModel):
         # THE SOLUTION BELOW DOES NOT WORK!
         #Vfor value in self.W.dot(x_i):
         #    self.W[y_i, :] += learning_rate * x_i * (y_i - self.sigmoid(value))
-        raise NotImplementedE
+        raise NotImplemented
 
 
 class MLP(object):
@@ -87,13 +90,22 @@ class MLP(object):
     # in main().
     def __init__(self, n_classes, n_features, hidden_size):
         # Initialize an MLP with a single hidden layer.
-        raise NotImplementedError
+        units = [n_features, hidden_size, n_classes]
+        self.weights = [np.random.normal(0.1, 0.01, (units[1], units[0])), 
+                        np.random.normal(0.1, 0.01, (units[2], units[1]))]
+        self.biases = [np.zeros(units[1]), np.zeros(units[2])]
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        raise NotImplementedError
+        z1 = self.weights[0].dot(X) + self.biases[0]
+        h1 = relu(z1)
+
+        #relu na ultima layer?
+        z2 = self.weights[1].dot(h1) + self.biases[1]
+
+        return z2, h1
 
     def evaluate(self, X, y):
         """
@@ -101,13 +113,61 @@ class MLP(object):
         y (n_examples): gold labels
         """
         # Identical to LinearModel.evaluate()
-        y_hat = self.predict(X)
-        n_correct = (y == y_hat).sum()
-        n_possible = y.shape[0]
-        return n_correct / n_possible
+        accuracies = np.array([])
+        for x, y in zip(X, y):
+            y_hat = self.predict(x)
+            accuracies = np.append(accuracies, np.mean(np.argmax(y_hat, axis=1) == np.argmax(y, axis=1)))
+            print("Accuracy: %f" % np.mean(np.argmax(y_hat, axis=1) == np.argmax(y, axis=1)))
+        return sum(accuracies) / len(accuracies)
+    
+    def compute_label_probabilities(self, output):
+        # softmax transformation.
+        probs = np.exp(output) / np.sum(np.exp(output))
+        return probs
+    
+    def compute_loss(self, output, y, loss_function='cross_entropy'):
+        if loss_function == 'squared':
+            y_pred = output
+            loss = .5*(y_pred - y).dot(y_pred - y)
+        elif loss_function == 'cross_entropy':
+            # softmax transformation.
+            probs = self.compute_label_probabilities(output)
+            loss = np.array(y).dot(np.log(probs))
+        return loss   
+    
+    def backward(self, x, y, output, hiddens, loss_function='cross_entropy'):
+        g = relu
+        probs = self.compute_label_probabilities(output)
+        grad_z = probs - y  # Grad of loss wrt last z.
+        grad_weights = []
+        grad_biases = []
+        for i in range(1, -1, -1):
+            # Gradient of hidden parameters.
+            h = x if i == 0 else hiddens
+            grad_weights.append(grad_z[:, None].dot(h[:, None].T))
+            grad_biases.append(grad_z)
 
-    def train_epoch(self, X, y, learning_rate=0.001):
-        raise NotImplementedError
+            # Gradient of hidden layer below.
+            grad_h = self.weights[i].T.dot(grad_z)
+
+            # Gradient of hidden layer below before activation.
+            assert(g == relu)
+            grad_z = grad_h * (1-h**2)   # Grad of loss wrt z3.
+
+        grad_weights.reverse()
+        grad_biases.reverse()
+        return grad_weights, grad_biases
+    
+    def update_parameters(self, grad_weights, grad_biases, learning_rate): 
+        for i in range(2):
+            self.weights[i] = learning_rate*grad_weights[i]
+            self.biases[i] = learning_rate*grad_biases[i]
+
+    def train_epoch(self, X, y, learning_rate=0.001, loss_function='cross_entropy'):
+        for x, y in zip(X, y):
+            output, hiddens = self.predict(x)
+            grad_weights, grad_biases = self.backward(x, y, output, hiddens, loss_function=loss_function)
+            self.update_parameters(grad_weights, grad_biases, learning_rate=learning_rate)
 
 
 def plot(epochs, valid_accs, test_accs):
@@ -156,11 +216,10 @@ def main():
     elif opt.model == 'logistic_regression':
         model = LogisticRegression(n_classes, n_feats)
     else:
-        model = MLP(n_classes, n_feats, opt.hidden_size, opt.layers)
+        model = MLP(n_classes, n_feats, opt.hidden_size)
     epochs = np.arange(1, opt.epochs + 1)
     valid_accs = []
     test_accs = []
-    print(train_X.shape, train_y.shape)
     for i in epochs:
         print('Training epoch {}'.format(i))
         train_order = np.random.permutation(train_X.shape[0])
