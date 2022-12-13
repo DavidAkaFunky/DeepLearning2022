@@ -18,8 +18,10 @@ def configure_seed(seed):
     np.random.seed(seed)
 
 def relu(x):
-	return (np.maximum(0, x))
+	return np.maximum(0, x)
 
+def softmax(x):
+    return np.exp(x) / np.sum(np.exp(x))
 
 class LinearModel(object):
     def __init__(self, n_classes, n_features, **kwargs):
@@ -30,7 +32,6 @@ class LinearModel(object):
 
     def train_epoch(self, X, y, **kwargs):
         for x_i, y_i in zip(X, y):
-            #print(x_i.shape, y_i.shape)
             self.update_weight(x_i, y_i, **kwargs)
 
     def predict(self, X):
@@ -59,7 +60,6 @@ class Perceptron(LinearModel):
         """
         # Q1.1a
         eta = kwargs.get("learning_rate", 1)
-        # print(x_i.shape, y_i.shape, self.W.dot(x_i).shape, self.W[y_i, :].shape)
         y_i_hat = np.argmax(self.W.dot(x_i))
         if y_i_hat != y_i:
             # Perceptron update.
@@ -68,8 +68,6 @@ class Perceptron(LinearModel):
 
 
 class LogisticRegression(LinearModel):
-    def softmax(self, x):
-        return np.exp(x) / np.sum(np.exp(x))
     
     def update_weight(self, x_i, y_i, learning_rate=0.001):
         """
@@ -78,10 +76,10 @@ class LogisticRegression(LinearModel):
         learning_rate (float): keep it at the default value for your plots
         """
         # Q1.1b
-        y_hat_i = self.softmax(self.W.dot(x_i))
+        y_hat_i = softmax(self.W.dot(x_i))
         y_i_one_hot = np.zeros(y_hat_i.shape)
         y_i_one_hot[y_i] = 1
-        self.W += learning_rate * np.multiply(x_i, np.atleast_2d(y_i_one_hot - y_hat_i).T)
+        self.W += learning_rate * (y_i_one_hot - y_hat_i)[:, None].dot(x_i[:, None].T)
 
 
 class MLP(object):
@@ -114,56 +112,46 @@ class MLP(object):
         # Identical to LinearModel.evaluate()
         gold_labels = y
         accuracy = 0
-        for x, y in zip(X, y):
-            predicted_labels = self.predict(x)
+        for x in X:
+            predicted_labels, _ = self.predict(x)
             for predicted_label in predicted_labels:
                 accuracy += np.mean(np.argmax(predicted_label, axis=0) == np.argmax(gold_labels, axis=0))
-        print(accuracy/(10000*10000))
-        print(accuracy)
-        return accuracy/(10000*10000)
-    
-    def compute_label_probabilities(self, output):
-        # softmax transformation.
-        probs = np.exp(output) / np.sum(np.exp(output))
-        return probs
+        return accuracy / x.shape[0]
     
     def backward(self, x, y, output, hiddens, loss_function='cross_entropy'):
-        g = relu
-        z = output
-        if loss_function == 'squared':
-            grad_z = z - y  # Grad of loss wrt last z.
-        elif loss_function == 'cross_entropy':
-        # softmax transformation.
-            probs = self.compute_label_probabilities(output)
-            grad_z = probs - y  # Grad of loss wrt last z.
+        
         grad_weights = []
         grad_biases = []
-        for i in range(1, -1, -1):
+
+        for i in range(len(self.weights) - 1, -1, -1):
+            if i == len(self.weights) - 1:
+                h = hiddens
+                if loss_function == 'cross_entropy':
+                    grad_z = softmax(output) - y
+                elif loss_function == 'squared':
+                    grad_z = output - y
+            else:
+                h = x
+                relu_derivs = np.array([k > 0 for k in hiddens]) # RELU derivative
+                grad_z = self.weights[i+1].T.dot(grad_z) * relu_derivs
+
             # Gradient of hidden parameters.
-            h = x if i == 0 else hiddens
             grad_weights.append(grad_z[:, None].dot(h[:, None].T))
             grad_biases.append(grad_z)
-
-            # Gradient of hidden layer below.
-            grad_h = self.weights[i].T.dot(grad_z)
-
-            # Gradient of hidden layer below before activation.
-            assert(g == relu)
-            grad_z = grad_h * (1-h**2)   # Grad of loss wrt z3.
 
         grad_weights.reverse()
         grad_biases.reverse()
         return grad_weights, grad_biases
-    
+
     def update_parameters(self, grad_weights, grad_biases, learning_rate): 
-        for i in range(2):
-            self.weights[i] -= learning_rate*grad_weights[i]
-            self.biases[i] -= learning_rate*grad_biases[i]
+        for i in range(len(self.weights)):
+            self.weights[i] -= learning_rate * grad_weights[i]
+            self.biases[i] -= learning_rate * grad_biases[i]
 
     def train_epoch(self, X, y, learning_rate=0.001, loss_function='cross_entropy'):
-        for x, y in zip(X, y):
-            output, hiddens = self.predict(x)
-            grad_weights, grad_biases = self.backward(x, y, output, hiddens, loss_function=loss_function)
+        for x_i, y_i in zip(X, y):
+            output, hiddens = self.predict(x_i)
+            grad_weights, grad_biases = self.backward(x_i, y_i, output, hiddens, loss_function=loss_function)
             self.update_parameters(grad_weights, grad_biases, learning_rate=learning_rate)
 
 
