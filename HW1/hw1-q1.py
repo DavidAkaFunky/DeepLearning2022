@@ -100,9 +100,8 @@ class MLP(object):
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
         z1 = self.weights[0].dot(X) + self.biases[0]
-        h1 = relu(z1)
-
-        #relu na ultima layer?
+        h1 = relu(z1) #hidden layer 
+        # Assume the output layer has no activation.
         z2 = self.weights[1].dot(h1) + self.biases[1]
 
         return z2, h1
@@ -113,32 +112,30 @@ class MLP(object):
         y (n_examples): gold labels
         """
         # Identical to LinearModel.evaluate()
-        accuracies = np.array([])
+        gold_labels = y
+        accuracy = 0
         for x, y in zip(X, y):
-            y_hat = self.predict(x)
-            accuracies = np.append(accuracies, np.mean(np.argmax(y_hat, axis=1) == np.argmax(y, axis=1)))
-            print("Accuracy: %f" % np.mean(np.argmax(y_hat, axis=1) == np.argmax(y, axis=1)))
-        return sum(accuracies) / len(accuracies)
+            predicted_labels = self.predict(x)
+            for predicted_label in predicted_labels:
+                accuracy += np.mean(np.argmax(predicted_label, axis=0) == np.argmax(gold_labels, axis=0))
+        print(accuracy/(10000*10000))
+        print(accuracy)
+        return accuracy/(10000*10000)
     
     def compute_label_probabilities(self, output):
         # softmax transformation.
         probs = np.exp(output) / np.sum(np.exp(output))
         return probs
     
-    def compute_loss(self, output, y, loss_function='cross_entropy'):
-        if loss_function == 'squared':
-            y_pred = output
-            loss = .5*(y_pred - y).dot(y_pred - y)
-        elif loss_function == 'cross_entropy':
-            # softmax transformation.
-            probs = self.compute_label_probabilities(output)
-            loss = np.array(y).dot(np.log(probs))
-        return loss   
-    
     def backward(self, x, y, output, hiddens, loss_function='cross_entropy'):
         g = relu
-        probs = self.compute_label_probabilities(output)
-        grad_z = probs - y  # Grad of loss wrt last z.
+        z = output
+        if loss_function == 'squared':
+            grad_z = z - y  # Grad of loss wrt last z.
+        elif loss_function == 'cross_entropy':
+        # softmax transformation.
+            probs = self.compute_label_probabilities(output)
+            grad_z = probs - y  # Grad of loss wrt last z.
         grad_weights = []
         grad_biases = []
         for i in range(1, -1, -1):
@@ -160,8 +157,8 @@ class MLP(object):
     
     def update_parameters(self, grad_weights, grad_biases, learning_rate): 
         for i in range(2):
-            self.weights[i] = learning_rate*grad_weights[i]
-            self.biases[i] = learning_rate*grad_biases[i]
+            self.weights[i] -= learning_rate*grad_weights[i]
+            self.biases[i] -= learning_rate*grad_biases[i]
 
     def train_epoch(self, X, y, learning_rate=0.001, loss_function='cross_entropy'):
         for x, y in zip(X, y):
