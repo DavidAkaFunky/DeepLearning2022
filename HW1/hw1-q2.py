@@ -46,7 +46,16 @@ class LogisticRegression(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        return torch.add(torch.linalg.matmul(self.W, x), self.b)
+        if len(x.shape) == 1:
+            x = x.resize_(1, x.shape[0])
+        res = torch.empty(x.shape[0], self.W.shape[0])
+        for i in range(res.shape[0]):
+            res[i] = torch.add(torch.linalg.matmul(x[i], torch.t(self.W)), self.b)
+        return res
+        #print(torch.linalg.matmul(self.W, x).shape, self.b.shape)
+        #res = torch.add(torch.linalg.matmul(self.W, x), self.b)
+        #print(res.shape)
+        #return res
 
 
 # Q2.2
@@ -98,10 +107,10 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     This function should return the loss (tip: call loss.item()) to get the
     loss as a numerical value that is not part of the computation graph.
     """
-    for input, target in zip(X, y):
-        output = model(input)
+    outputs = model(X)
+    for output, target in zip(outputs, y):
         one_hot = torch.zeros(output.shape)
-        one_hot[0][target] = 1
+        one_hot[target] = 1
         loss = criterion(output, one_hot)
         loss.backward()
         optimizer.step()
