@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 import utils
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Q2.1
 class LogisticRegression(nn.Module):
@@ -52,10 +53,6 @@ class LogisticRegression(nn.Module):
         for i in range(res.shape[0]):
             res[i] = torch.add(torch.linalg.matmul(x[i], torch.t(self.W)), self.b)
         return res
-        #print(torch.linalg.matmul(self.W, x).shape, self.b.shape)
-        #res = torch.add(torch.linalg.matmul(self.W, x), self.b)
-        #print(res.shape)
-        #return res
 
 
 # Q2.2
@@ -76,7 +73,24 @@ class FeedforwardNetwork(nn.Module):
         includes modules for several activation functions and dropout as well.
         """
         super().__init__()
-        # Implement me!
+        self.W = [nn.Parameter(torch.zeros(n_features, hidden_size))]
+        self.b = [nn.Parameter(torch.zeros(1, hidden_size))]
+        # We're assuming the hidden_size is always the same, as the parameter
+        # is always an int, instead of an array of ints
+        for _ in range(layers-1): 
+            self.W.append(nn.Parameter(torch.zeros(hidden_size, hidden_size)))
+            self.b.append(nn.Parameter(torch.zeros(1, hidden_size)))
+        self.W.append(nn.Parameter(torch.zeros(hidden_size, n_classes)))
+        self.b.append(nn.Parameter(torch.zeros(1, n_classes)))
+        self.W = nn.ParameterList(self.W)
+        self.b = nn.ParameterList(self.b)
+        if activation_type == "tanh":
+            self.activation_type = nn.functional.tanh
+        elif activation_type == "relu":
+            self.activation_type = nn.functional.relu
+        else:
+            raise ValueError("Activation type must be either 'tanh' or 'relu'")
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, **kwargs):
         """
@@ -86,7 +100,10 @@ class FeedforwardNetwork(nn.Module):
         the output logits from x. This will include using various hidden
         layers, pointwise nonlinear functions, and dropout.
         """
-        raise NotImplementedError
+        h = x
+        for i in range(len(self.W)):
+            h = self.activation_type(torch.add(torch.linalg.matmul(h, self.W[i]), self.b[i]))
+        return h
 
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
@@ -109,6 +126,7 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     """
     outputs = model(X)
     for output, target in zip(outputs, y):
+        optimizer.zero_grad()
         one_hot = torch.zeros(output.shape)
         one_hot[target] = 1
         loss = criterion(output, one_hot)
@@ -157,7 +175,7 @@ def main():
                         help="Size of training batch.")
     parser.add_argument('-learning_rate', type=float, default=0.01)
     parser.add_argument('-l2_decay', type=float, default=0)
-    parser.add_argument('-hidden_sizes', type=int, default=100)
+    parser.add_argument('-hidden_size', type=int, default=100)
     parser.add_argument('-layers', type=int, default=1)
     parser.add_argument('-dropout', type=float, default=0.3)
     parser.add_argument('-activation',
@@ -167,7 +185,6 @@ def main():
     opt = parser.parse_args()
 
     utils.configure_seed(seed=42)
-
     data = utils.load_classification_data()
     dataset = utils.ClassificationDataset(data)
     train_dataloader = DataLoader(
@@ -200,7 +217,6 @@ def main():
         model.parameters(),
         lr=opt.learning_rate,
         weight_decay=opt.l2_decay)
-
     # get a loss criterion
     criterion = nn.CrossEntropyLoss()
 
