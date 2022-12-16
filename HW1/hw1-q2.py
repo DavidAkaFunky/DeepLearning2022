@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from matplotlib import pyplot as plt
+import numpy as np
 
 import utils
 
@@ -28,8 +29,7 @@ class LogisticRegression(nn.Module):
         https://pytorch.org/docs/stable/nn.html
         """
         super().__init__()
-        self.W = nn.Parameter(torch.zeros(n_classes, n_features))
-        self.b = nn.Parameter(torch.zeros(1, n_classes))
+        self.model = nn.Linear(n_features, n_classes)
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
 
@@ -47,12 +47,8 @@ class LogisticRegression(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        if len(x.shape) == 1:
-            x = x.resize_(1, x.shape[0])
-        res = torch.empty(x.shape[0], self.W.shape[0])
-        for i in range(res.shape[0]):
-            res[i] = torch.add(torch.linalg.matmul(x[i], torch.t(self.W)), self.b)
-        return res
+        return self.model(x)
+        
 
 
 # Q2.2
@@ -73,24 +69,18 @@ class FeedforwardNetwork(nn.Module):
         includes modules for several activation functions and dropout as well.
         """
         super().__init__()
-        self.W = [nn.Parameter(torch.zeros(n_features, hidden_size))]
-        self.b = [nn.Parameter(torch.zeros(1, hidden_size))]
-        # We're assuming the hidden_size is always the same, as the parameter
-        # is always an int, instead of an array of ints
-        for _ in range(layers-1): 
-            self.W.append(nn.Parameter(torch.zeros(hidden_size, hidden_size)))
-            self.b.append(nn.Parameter(torch.zeros(1, hidden_size)))
-        self.W.append(nn.Parameter(torch.zeros(hidden_size, n_classes)))
-        self.b.append(nn.Parameter(torch.zeros(1, n_classes)))
-        self.W = nn.ParameterList(self.W)
-        self.b = nn.ParameterList(self.b)
         if activation_type == "tanh":
-            self.activation_type = nn.functional.tanh
+            activation_type = nn.Tanh
         elif activation_type == "relu":
-            self.activation_type = nn.functional.relu
+            activation_type = nn.ReLU
         else:
             raise ValueError("Activation type must be either 'tanh' or 'relu'")
-        self.dropout = nn.Dropout(dropout)
+        dropout = nn.Dropout(dropout)
+        params = [nn.Linear(n_features, hidden_size), activation_type(), dropout]
+        for _ in range(layers-1):
+            params.append(nn.Linear(hidden_size, hidden_size), activation_type(), dropout)
+        params.append(nn.Linear(hidden_size, n_classes))
+        self.model = nn.Sequential(*params)
 
     def forward(self, x, **kwargs):
         """
@@ -100,10 +90,7 @@ class FeedforwardNetwork(nn.Module):
         the output logits from x. This will include using various hidden
         layers, pointwise nonlinear functions, and dropout.
         """
-        h = x
-        for i in range(len(self.W)):
-            h = self.activation_type(torch.add(torch.linalg.matmul(h, self.W[i]), self.b[i]))
-        return h
+        return self.model(x)
 
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
@@ -125,13 +112,10 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     loss as a numerical value that is not part of the computation graph.
     """
     outputs = model(X)
-    for output, target in zip(outputs, y):
-        optimizer.zero_grad()
-        one_hot = torch.zeros(output.shape)
-        one_hot[target] = 1
-        loss = criterion(output, one_hot)
-        loss.backward()
-        optimizer.step()
+    optimizer.zero_grad()
+    loss = criterion(outputs, y)
+    loss.backward()
+    optimizer.step()
     return loss.item()
 
 
@@ -160,7 +144,7 @@ def plot(epochs, plottable, ylabel='', name=''):
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
     plt.plot(epochs, plottable)
-    plt.savefig('%s.pdf' % (name), bbox_inches='tight')
+    plt.savefig('q2-%s.png' % (name), bbox_inches='tight')
 
 
 def main():
@@ -182,6 +166,7 @@ def main():
                         choices=['tanh', 'relu'], default='relu')
     parser.add_argument('-optimizer',
                         choices=['sgd', 'adam'], default='sgd')
+    parser.add_argument('-debug', type=bool, default=False)
     opt = parser.parse_args()
 
     utils.configure_seed(seed=42)
@@ -226,20 +211,24 @@ def main():
     valid_accs = []
     train_losses = []
     for ii in epochs:
-        print('Training epoch {}'.format(ii))
+        if opt.debug:
+            print('Training epoch {}'.format(ii))
         for X_batch, y_batch in train_dataloader:
             loss = train_batch(
                 X_batch, y_batch, model, optimizer, criterion)
             train_losses.append(loss)
 
         mean_loss = torch.tensor(train_losses).mean().item()
-        print('Training loss: %.4f' % (mean_loss))
+        if opt.debug:
+            print('Training loss: %.4f' % (mean_loss))
 
         train_mean_losses.append(mean_loss)
         valid_accs.append(evaluate(model, dev_X, dev_y))
-        print('Valid acc: %.4f' % (valid_accs[-1]))
+        if opt.debug:
+            print('Valid acc: %.4f' % (valid_accs[-1]))
 
-    print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
+    if opt.debug:
+        print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
     # plot
     if opt.model == "logistic_regression":
         config = "{}-{}".format(opt.learning_rate, opt.optimizer)

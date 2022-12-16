@@ -155,14 +155,16 @@ class MLP(object):
             self.update_parameters(grad_weights, grad_biases, learning_rate=learning_rate)
 
 
-def plot(epochs, valid_accs, test_accs):
+def plot(epochs, valid_accs, test_accs, name):
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.xticks(epochs)
     plt.plot(epochs, valid_accs, label='validation')
+    plt.legend()
+    plt.savefig('q1-%s-valid_accs.png' % (name), bbox_inches='tight')
     plt.plot(epochs, test_accs, label='test')
     plt.legend()
-    plt.show()
+    plt.savefig('q1-%s-test_accs.png' % (name), bbox_inches='tight')
 
 
 def main():
@@ -182,6 +184,7 @@ def main():
     parser.add_argument('-learning_rate', type=float, default=0.001,
                         help="""Learning rate for parameter updates (needed for
                         logistic regression and MLP, but not perceptron)""")
+    parser.add_argument('-debug', type=bool, default=False)
     opt = parser.parse_args()
 
     utils.configure_seed(seed=42)
@@ -206,7 +209,8 @@ def main():
     valid_accs = []
     test_accs = []
     for i in epochs:
-        print('Training epoch {}'.format(i))
+        if opt.debug:
+            print('Training epoch {}'.format(i))
         train_order = np.random.permutation(train_X.shape[0])
         train_X = train_X[train_order]
         train_y = train_y[train_order]
@@ -219,7 +223,7 @@ def main():
         test_accs.append(model.evaluate(test_X, test_y))
 
     # plot
-    plot(epochs, valid_accs, test_accs)
+    plot(epochs, valid_accs, test_accs, opt.model)
 
 
 if __name__ == '__main__':
