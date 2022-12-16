@@ -21,6 +21,7 @@ def relu(x):
 	return np.maximum(0, x)
 
 def softmax(x):
+    x -= np.max(x)
     return np.exp(x) / np.sum(np.exp(x))
 
 class LinearModel(object):
@@ -89,18 +90,18 @@ class MLP(object):
     def __init__(self, n_classes, n_features, hidden_size):
         # Initialize an MLP with a single hidden layer.
         units = [n_features, hidden_size, n_classes]
-        self.weights = [np.random.normal(0.1, 0.01, (units[1], units[0])), 
+        self.W = [np.random.normal(0.1, 0.01, (units[1], units[0])), 
                         np.random.normal(0.1, 0.01, (units[2], units[1]))]
-        self.biases = [np.zeros(units[1]), np.zeros(units[2])]
+        self.b = [np.zeros(units[1]), np.zeros(units[2])]
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        z1 = self.weights[0].dot(X) + self.biases[0]
+        z1 = self.W[0].dot(X) + self.b[0]
         h1 = relu(z1) #hidden layer 
         # Assume the output layer has no activation.
-        z2 = self.weights[1].dot(h1) + self.biases[1]
+        z2 = self.W[1].dot(h1) + self.b[1]
 
         return z2, h1
 
@@ -123,8 +124,8 @@ class MLP(object):
         grad_weights = []
         grad_biases = []
 
-        for i in range(len(self.weights) - 1, -1, -1):
-            if i == len(self.weights) - 1:
+        for i in range(len(self.W) - 1, -1, -1):
+            if i == len(self.W) - 1:
                 h = hiddens
                 if loss_function == 'cross_entropy':
                     grad_z = softmax(output) - y
@@ -133,7 +134,7 @@ class MLP(object):
             else:
                 h = x
                 relu_derivs = np.array([k > 0 for k in hiddens]) # RELU derivative
-                grad_z = self.weights[i+1].T.dot(grad_z) * relu_derivs
+                grad_z = self.W[i+1].T.dot(grad_z) * relu_derivs
 
             # Gradient of hidden parameters.
             grad_weights.append(grad_z[:, None].dot(h[:, None].T))
@@ -144,9 +145,9 @@ class MLP(object):
         return grad_weights, grad_biases
 
     def update_parameters(self, grad_weights, grad_biases, learning_rate): 
-        for i in range(len(self.weights)):
-            self.weights[i] -= learning_rate * grad_weights[i]
-            self.biases[i] -= learning_rate * grad_biases[i]
+        for i in range(len(self.W)):
+            self.W[i] -= learning_rate * grad_weights[i]
+            self.b[i] -= learning_rate * grad_biases[i]
 
     def train_epoch(self, X, y, learning_rate=0.001, loss_function='cross_entropy'):
         for x_i, y_i in zip(X, y):
