@@ -192,7 +192,7 @@ def main():
             opt.layers,
             opt.activation,
             opt.dropout
-        )loss
+        )
 
     # get an optimizer
     optims = {"adam": torch.optim.Adam, "sgd": torch.optim.SGD}
