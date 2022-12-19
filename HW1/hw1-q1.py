@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 
 import utils
 
-
 def configure_seed(seed):
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
@@ -91,49 +90,51 @@ class MLP(object):
         # Initialize an MLP with a single hidden layer.
         units = [n_features, hidden_size, n_classes]
         self.W = [np.random.normal(0.1, 0.01, (units[1], units[0])), 
-                        np.random.normal(0.1, 0.01, (units[2], units[1]))]
+                  np.random.normal(0.1, 0.01, (units[2], units[1]))]
         self.b = [np.zeros(units[1]), np.zeros(units[2])]
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        z1 = self.W[0].dot(X) + self.b[0]
-        h1 = relu(z1) #hidden layer 
-        # Assume the output layer has no activation.
-        z2 = self.W[1].dot(h1) + self.b[1]
+        num_layers = len(self.W)
+        hiddens = []
+        for i in range(num_layers):
+            h = X if i == 0 else hiddens[i-1]
+            z = self.W[i].dot(h) + self.b[i]
+            if i < num_layers-1:  # Assume the output layer has no activation.
+                hiddens.append(relu(z))
+        output = z
+        # For classification this is a vector of logits (label scores).
+        # For regression this is a vector of predictions.
+        return output, hiddens
 
-        return z2, h1
-
-    def evaluate(self, X, y):
+    def evaluate(self, x, y):
         """
         X (n_examples x n_features)
         y (n_examples): gold labels
         """
         # Identical to LinearModel.evaluate()
-        gold_labels = y
         accuracy = 0
-        for x in X:
-            predicted_labels, _ = self.predict(x)
-            for predicted_label in predicted_labels:
-                accuracy += np.mean(np.argmax(predicted_label, axis=0) == np.argmax(gold_labels, axis=0))
+        for x_i, y_i in zip(x, y):
+            predicted_labels, _ = self.predict(x_i)
+            accuracy += np.argmax(predicted_labels) == y_i
         return accuracy / x.shape[0]
     
     def backward(self, x, y, output, hiddens, loss_function='cross_entropy'):
         
         grad_weights = []
         grad_biases = []
-
+        
         for i in range(len(self.W) - 1, -1, -1):
+            h = x if i == 0 else hiddens[i-1]
             if i == len(self.W) - 1:
-                h = hiddens
                 if loss_function == 'cross_entropy':
                     grad_z = softmax(output) - y
                 elif loss_function == 'squared':
                     grad_z = output - y
             else:
-                h = x
-                relu_derivs = np.array([k > 0 for k in hiddens]) # RELU derivative
+                relu_derivs = np.array([k > 0 for k in hiddens[i-1]]) # RELU derivative
                 grad_z = self.W[i+1].T.dot(grad_z) * relu_derivs
 
             # Gradient of hidden parameters.
@@ -152,7 +153,9 @@ class MLP(object):
     def train_epoch(self, X, y, learning_rate=0.001, loss_function='cross_entropy'):
         for x_i, y_i in zip(X, y):
             output, hiddens = self.predict(x_i)
-            grad_weights, grad_biases = self.backward(x_i, y_i, output, hiddens, loss_function=loss_function)
+            y_i_one_hot = np.zeros(output.shape)
+            y_i_one_hot[y_i] = 1
+            grad_weights, grad_biases = self.backward(x_i, y_i_one_hot, output, hiddens, loss_function=loss_function)
             self.update_parameters(grad_weights, grad_biases, learning_rate=learning_rate)
 
 
@@ -161,11 +164,9 @@ def plot(epochs, valid_accs, test_accs, name):
     plt.ylabel('Accuracy')
     plt.xticks(epochs)
     plt.plot(epochs, valid_accs, label='validation')
-    plt.legend()
-    plt.savefig('q1-%s-valid_accs.png' % (name), bbox_inches='tight')
     plt.plot(epochs, test_accs, label='test')
     plt.legend()
-    plt.savefig('q1-%s-test_accs.png' % (name), bbox_inches='tight')
+    plt.savefig('results/q1-%s.png' % (name), bbox_inches='tight')
 
 
 def main():

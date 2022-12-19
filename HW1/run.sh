@@ -5,12 +5,20 @@ activation_function=(relu tanh)
 
 source ../env/bin/activate
 
-echo "Running Q1.1b..."
-python hw1-q1.py logistic_regression
-echo "_____________________"
-
 rm -rf results
 mkdir results
+
+echo "Running Q1.1a)..."
+python hw1-q1.py perceptron
+
+echo "Running Q1.1b)..."
+python hw1-q1.py logistic_regression
+
+echo "Running Q1.2b)..."
+python hw1-q1.py mlp
+
+echo "_____________________"
+
 for lr in ${learning_rate[@]}; do
     echo "Running logistic regression with learning rate = $lr..."
     python hw1-q2.py logistic_regression -learning_rate $lr

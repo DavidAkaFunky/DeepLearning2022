@@ -144,7 +144,7 @@ def plot(epochs, plottable, ylabel='', name=''):
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
     plt.plot(epochs, plottable)
-    plt.savefig('q2-%s.png' % (name), bbox_inches='tight')
+    plt.savefig('results/q2-%s.png' % (name), bbox_inches='tight')
 
 
 def main():
@@ -192,7 +192,7 @@ def main():
             opt.layers,
             opt.activation,
             opt.dropout
-        )
+        )loss
 
     # get an optimizer
     optims = {"adam": torch.optim.Adam, "sgd": torch.optim.SGD}
