@@ -28,7 +28,7 @@ for lr in ${learning_rate[@]}; do
             for af in ${activation_function[@]}; do
                 echo "Running logistic regression with: Learning rate = $lr"
                 echo "Hidden size = $hs"
-                echo "Dropout = $ds"
+                echo "Dropout = $dout"
                 echo "Activation function = $af"
                 python hw1-q2.py mlp -learning_rate $lr -hidden_size $hs -dropout $dout -activation $af
                 echo "Done."
