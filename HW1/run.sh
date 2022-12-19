@@ -26,7 +26,8 @@ for lr in ${learning_rate[@]}; do
     for hs in ${hidden_size[@]}; do
         for dout in ${dropout[@]}; do
             for af in ${activation_function[@]}; do
-                echo "Running logistic regression with: Learning rate = $lr"
+                echo "Running MLP with:"
+                echo "Learning rate = $lr"
                 echo "Hidden size = $hs"
                 echo "Dropout = $dout"
                 echo "Activation function = $af"
