@@ -32,7 +32,7 @@ for lr in ${learning_rate[@]}; do
                 echo "Dropout = $dout"
                 echo "Activation function = $af"
                 python hw1-q2.py mlp -learning_rate $lr -hidden_size $hs -dropout $dout -activation $af
-                echo "Done."
+                echo "_____________________"
             done
         done
     done

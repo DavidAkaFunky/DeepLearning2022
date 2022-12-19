@@ -227,8 +227,7 @@ def main():
         if opt.debug:
             print('Valid acc: %.4f' % (valid_accs[-1]))
 
-    if opt.debug:
-        print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
+    print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
     # plot
     if opt.model == "logistic_regression":
         config = "{}-{}".format(opt.learning_rate, opt.optimizer)
