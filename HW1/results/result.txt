@@ -36,3 +36,43 @@ Activation function = tanh
 Final Test acc: 0.8518
 _____________________
 Done.
+
+cat:
+__
+__
+Running MLP with:
+Learning rate = 0.001
+Final Test acc: 0.7450
+__
+__
+Running MLP with:
+Learning rate = 0.01
+Final Test acc: 0.8599
+__
+__
+Running MLP with:
+Learning rate = 0.1
+Final Test acc: 0.8727
+__
+Running MLP with:
+Hidden size = 200
+Final Test acc: 0.8817
+__
+Running MLP with:
+Dropout = 0.5
+Final Test acc: 0.8409
+__
+Running MLP with:
+Activation function = tanh
+Final Test acc: 0.8257
+__
+Running MLP with:
+Learning rate = 2
+Final Test acc: 0.3108
+__
+__
+Running MLP with:
+Learning rate = 3
+Final Test acc: 0.3960
+_
+Done.
