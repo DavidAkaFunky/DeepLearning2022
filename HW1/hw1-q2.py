@@ -78,8 +78,8 @@ class FeedforwardNetwork(nn.Module):
         dropout = nn.Dropout(dropout)
         params = [nn.Linear(n_features, hidden_size), activation_type(), dropout]
         for _ in range(layers-1):
-            params.append(nn.Linear(hidden_size, hidden_size), activation_type(), dropout)
-        params.append(nn.Linear(hidden_size, n_classes))
+            params += [nn.Linear(hidden_size, hidden_size), activation_type(), dropout]
+        params += [nn.Linear(hidden_size, n_classes)]
         self.model = nn.Sequential(*params)
 
     def forward(self, x, **kwargs):
@@ -144,7 +144,7 @@ def plot(epochs, plottable, ylabel='', name=''):
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
     plt.plot(epochs, plottable)
-    plt.savefig('q2-%s.png' % (name), bbox_inches='tight')
+    plt.savefig('results/q2-%s.png' % (name), bbox_inches='tight')
 
 
 def main():
@@ -155,7 +155,7 @@ def main():
     parser.add_argument('-epochs', default=20, type=int,
                         help="""Number of epochs to train for. You should not
                         need to change this value for your plots.""")
-    parser.add_argument('-batch_size', default=1, type=int,
+    parser.add_argument('-batch_size', default=16, type=int,
                         help="Size of training batch.")
     parser.add_argument('-learning_rate', type=float, default=0.01)
     parser.add_argument('-l2_decay', type=float, default=0)
@@ -227,8 +227,7 @@ def main():
         if opt.debug:
             print('Valid acc: %.4f' % (valid_accs[-1]))
 
-    if opt.debug:
-        print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
+    print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
     # plot
     if opt.model == "logistic_regression":
         config = "{}-{}".format(opt.learning_rate, opt.optimizer)

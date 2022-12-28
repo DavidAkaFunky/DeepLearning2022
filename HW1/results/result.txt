@@ -1,0 +1,78 @@
+Running Q1.1a)...
+Running Q1.1b)...
+Running Q1.2b)...
+_____________________
+Running logistic regression with learning rate = 0.001...
+Final Test acc: 0.7019
+_____________________
+Running MLP with:
+Learning rate = 0.001
+Final Test acc: 0.8715
+_____________________
+Running logistic regression with learning rate = 0.01...
+Final Test acc: 0.6806
+_____________________
+Running MLP with:
+Learning rate = 0.01
+Final Test acc: 0.8576
+_____________________
+Running logistic regression with learning rate = 0.1...
+Final Test acc: 0.6216
+_____________________
+Running MLP with:
+Learning rate = 0.1
+Final Test acc: 0.1618
+_____________________
+Running MLP with:
+Hidden size = 200
+Final Test acc: 0.8900
+_____________________
+Running MLP with:
+Dropout = 0.5
+Final Test acc: 0.8410
+_____________________
+Running MLP with:
+Activation function = tanh
+Final Test acc: 0.8518
+_____________________
+Done.
+
+cat:
+__
+__
+Running MLP with:
+Learning rate = 0.001
+Final Test acc: 0.7450
+__
+__
+Running MLP with:
+Learning rate = 0.01
+Final Test acc: 0.8599
+__
+__
+Running MLP with:
+Learning rate = 0.1
+Final Test acc: 0.8727
+__
+Running MLP with:
+Hidden size = 200
+Final Test acc: 0.8817
+__
+Running MLP with:
+Dropout = 0.5
+Final Test acc: 0.8409
+__
+Running MLP with:
+Activation function = tanh
+Final Test acc: 0.8257
+__
+Running MLP with:
+Learning rate = 2
+Final Test acc: 0.3108
+__
+__
+Running MLP with:
+Learning rate = 3
+Final Test acc: 0.3960
+_
+Done.
