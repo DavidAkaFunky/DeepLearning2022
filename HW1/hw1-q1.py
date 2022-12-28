@@ -84,20 +84,22 @@ class LogisticRegression(LinearModel):
 
 
 class MLP(object):
-    # Q3.2b. This MLP skeleton code allows the MLP to be used in place of the
+    # Q1.2b. This MLP skeleton code allows the MLP to be used in place of the
     # linear models with no changes to the training loop or evaluation code
     # in main().
     def __init__(self, n_classes, n_features, hidden_size):
         # Initialize an MLP with a single hidden layer.
         units = [n_features, hidden_size, n_classes]
         self.W = [np.random.normal(0.1, 0.01, (units[1], units[0])), 
-                        np.random.normal(0.1, 0.01, (units[2], units[1]))]
+                  np.random.normal(0.1, 0.01, (units[2], units[1]))]
         self.b = [np.zeros(units[1]), np.zeros(units[2])]
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
+
+        # Make this generic if possible!
         z1 = self.W[0].dot(X) + self.b[0]
         h1 = relu(z1) #hidden layer 
         # Assume the output layer has no activation.
@@ -125,14 +127,13 @@ class MLP(object):
         grad_biases = []
 
         for i in range(len(self.W) - 1, -1, -1):
+            h = x if i == 0 else hiddens
             if i == len(self.W) - 1:
-                h = hiddens
                 if loss_function == 'cross_entropy':
                     grad_z = softmax(output) - y
                 elif loss_function == 'squared':
                     grad_z = output - y
             else:
-                h = x
                 relu_derivs = np.array([k > 0 for k in hiddens]) # RELU derivative
                 grad_z = self.W[i+1].T.dot(grad_z) * relu_derivs
 
