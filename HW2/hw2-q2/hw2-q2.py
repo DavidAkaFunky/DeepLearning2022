@@ -17,7 +17,7 @@ import utils
 
 class CNN(nn.Module):
     
-    def __init__(self, n_classes, n_features, dropout_prob):
+    def __init__(self, n_classes, dropout_prob):
         """
         The __init__ should be used to declare what kind of layers and other
         parameters the module has. For example, a CNN module has convolution,
@@ -26,15 +26,14 @@ class CNN(nn.Module):
         https://pytorch.org/docs/stable/nn.html
         """
         super(CNN, self).__init__()
-        params = [nn.Conv2d(n_features, 8, 5), nn.ReLU(), nn.MaxPool2d(2, stride=2),
-                  nn.Conv2d(8, 16, 3), nn.ReLU(), nn.MaxPool2d(2, stride=2),
-                  #Affine(input, 600),
-                  nn.ReLU(), nn.Dropout(dropout_prob),
-                  #Affine(600, 120),
-                  nn.ReLU(),
-                  #Affine(600, n_classes),
-                  nn.LogSoftmax()]
-        self.model = nn.Sequential(*params)
+        # What padding to use?
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=5, padding=2)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=3)
+        self.dropout_prob = dropout_prob
+        self.dropout = nn.Dropout2d()
+        self.fc1 = nn.Linear(576, 600)
+        self.fc2 = nn.Linear(600, 120)
+        self.fc3 = nn.Linear(120, n_classes)
         
         
     def forward(self, x):
@@ -53,7 +52,28 @@ class CNN(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        return self.model(x)    
+        N = x.shape[0]
+        x = x.view(N, 1, 28, 28)
+        # Batch size = N, images 28x28 =>
+        #     x.shape = [N, 1, 28, 28]
+        x = F.max_pool2d(F.relu(self.conv1(x)), 2, stride=2)
+        # Convolution with 5x5 filter with padding = 2 (to preserve size) and 8 channels =>
+        #     x.shape = [N, 8, 28, 28] since 28 = 28 - 5 + 2x2 + 1
+        # Max pooling with stride of 2 =>
+        #     x.shape = [N, 8, 14, 14]
+        x = F.max_pool2d(F.relu(self.conv2(x)), 2, stride=2)
+        # Convolution with 3x3 filter without padding and 16 channels =>
+        #     x.shape = [N, 16, 12, 12] since 12 = 14 - 3 + 1
+        # Max pooling with stride of 2 =>
+        #     x.shape = [N, 16, 6, 6]
+        x = x.view(N, 576)
+        # Reshape =>
+        #     x.shape = [N, 576]
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, training=self.training, p=self.dropout_prob)
+        x = F.relu(self.fc2(x))
+        x = F.log_softmax(self.fc3(x), dim=1)
+        return x   
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
     """
@@ -160,12 +180,10 @@ def main():
         dataset, batch_size=opt.batch_size, shuffle=True)
     dev_X, dev_y = dataset.dev_X, dataset.dev_y
     test_X, test_y = dataset.test_X, dataset.test_y
-
     n_classes = torch.unique(dataset.y).shape[0]  # 10
-    n_feats = dataset.X.shape[1]
 
     # initialize the model
-    model = CNN(n_classes, n_feats, opt.dropout)
+    model = CNN(n_classes, opt.dropout)
     
     # get an optimizer
     optims = {"adam": torch.optim.Adam, "sgd": torch.optim.SGD}
