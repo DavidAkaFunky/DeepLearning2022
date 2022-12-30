@@ -17,7 +17,7 @@ import utils
 
 class CNN(nn.Module):
     
-    def __init__(self, dropout_prob):
+    def __init__(self, n_classes, n_features, dropout_prob):
         """
         The __init__ should be used to declare what kind of layers and other
         parameters the module has. For example, a CNN module has convolution,
@@ -26,8 +26,16 @@ class CNN(nn.Module):
         https://pytorch.org/docs/stable/nn.html
         """
         super(CNN, self).__init__()
+        params = [nn.Conv2d(n_features, 8, 5), nn.ReLU(), nn.MaxPool2d(2, stride=2),
+                  nn.Conv2d(8, 16, 3), nn.ReLU(), nn.MaxPool2d(2, stride=2),
+                  #Affine(input, 600),
+                  nn.ReLU(), nn.Dropout(dropout_prob),
+                  #Affine(600, 120),
+                  nn.ReLU(),
+                  #Affine(600, n_classes),
+                  nn.LogSoftmax()]
+        self.model = nn.Sequential(*params)
         
-        # Implement me!
         
     def forward(self, x):
         """
@@ -45,7 +53,7 @@ class CNN(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        raise NotImplementedError
+        return self.model(x)    
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
     """
@@ -65,7 +73,12 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     This function should return the loss (tip: call loss.item()) to get the
     loss as a numerical value that is not part of the computation graph.
     """
-    raise NotImplementedError
+    outputs = model(X)
+    optimizer.zero_grad()
+    loss = criterion(outputs, y)
+    loss.backward()
+    optimizer.step()
+    return loss.item()
 
 def predict(model, X):
     """X (n_examples x n_features)"""
@@ -133,9 +146,9 @@ def main():
     parser.add_argument('-learning_rate', type=float, default=0.01,
                         help="""Learning rate for parameter updates""")
     parser.add_argument('-l2_decay', type=float, default=0)
-    parser.add_argument('-dropout', type=float, default=0.8)
+    parser.add_argument('-dropout', type=float, default=0.3)
     parser.add_argument('-optimizer',
-                        choices=['sgd', 'adam'], default='sgd')
+                        choices=['sgd', 'adam'], default='adam')
     
     opt = parser.parse_args()
 
@@ -148,8 +161,11 @@ def main():
     dev_X, dev_y = dataset.dev_X, dataset.dev_y
     test_X, test_y = dataset.test_X, dataset.test_y
 
+    n_classes = torch.unique(dataset.y).shape[0]  # 10
+    n_feats = dataset.X.shape[1]
+
     # initialize the model
-    model = CNN(opt.dropout)
+    model = CNN(n_classes, n_feats, opt.dropout)
     
     # get an optimizer
     optims = {"adam": torch.optim.Adam, "sgd": torch.optim.SGD}
