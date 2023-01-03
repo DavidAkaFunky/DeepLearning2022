@@ -125,7 +125,7 @@ def plot(epochs, plottable, ylabel='', name=''):
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
     plt.plot(epochs, plottable)
-    plt.savefig('%s.pdf' % (name), bbox_inches='tight')
+    plt.savefig('results/%s.pdf' % (name), bbox_inches='tight')
 
 
 activation = {}
@@ -134,8 +134,8 @@ def get_activation(name):
         activation[name] = output.detach()
     return hook
 
-def plot_feature_maps(model, train_dataset):
-    
+def plot_feature_maps(model, train_dataset, config):
+    plt.clf()
     model.conv1.register_forward_hook(get_activation('conv1'))
     
     data, _ = train_dataset[4]
@@ -143,7 +143,7 @@ def plot_feature_maps(model, train_dataset):
     output = model(data)
 
     plt.imshow(data.reshape(28,-1)) 
-    plt.savefig('original_image.pdf')
+    plt.savefig('results/original_image.pdf')
 
     k=0
     act = activation['conv1'].squeeze()
@@ -153,7 +153,7 @@ def plot_feature_maps(model, train_dataset):
         for j in range(act.size(0)//2):
             ax[i,j].imshow(act[k].detach().cpu().numpy())
             k+=1  
-            plt.savefig('activation_maps.pdf') 
+            plt.savefig('results/activation_maps-{}.pdf'.format(config)) 
 
 
 def main():
@@ -169,6 +169,7 @@ def main():
     parser.add_argument('-dropout', type=float, default=0.3)
     parser.add_argument('-optimizer',
                         choices=['sgd', 'adam'], default='adam')
+    parser.add_argument('-debug', type=bool, default=False)
     
     opt = parser.parse_args()
 
@@ -202,19 +203,22 @@ def main():
     valid_accs = []
     train_losses = []
     for ii in epochs:
-        print('Training epoch {}'.format(ii))
+        if opt.debug:
+            print('Training epoch {}'.format(ii))
         for X_batch, y_batch in train_dataloader:
             loss = train_batch(
                 X_batch, y_batch, model, optimizer, criterion)
             train_losses.append(loss)
 
         mean_loss = torch.tensor(train_losses).mean().item()
-        print('Training loss: %.4f' % (mean_loss))
+        if opt.debug:
+            print('Training loss: %.4f' % (mean_loss))
 
         train_mean_losses.append(mean_loss)
         valid_accs.append(evaluate(model, dev_X, dev_y))
-        print('Valid acc: %.4f' % (valid_accs[-1]))
-
+        if opt.debug:
+            print('Valid acc: %.4f' % (valid_accs[-1]))
+    
     print('Final Test acc: %.4f' % (evaluate(model, test_X, test_y)))
     # plot
     config = "{}-{}-{}-{}".format(opt.learning_rate, opt.dropout, opt.l2_decay, opt.optimizer)
@@ -222,7 +226,7 @@ def main():
     plot(epochs, train_mean_losses, ylabel='Loss', name='CNN-training-loss-{}'.format(config))
     plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config))
     
-    plot_feature_maps(model, dataset)
+    plot_feature_maps(model, dataset, config)
 
 if __name__ == '__main__':
     main()

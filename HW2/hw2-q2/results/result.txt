@@ -1,0 +1,10 @@
+Running Q2 with learning rate = 0.00001...
+Final Test acc: 0.8938
+_____________________
+Running Q2 with learning rate = 0.0005...
+Final Test acc: 0.9571
+_____________________
+Running Q2 with learning rate = 0.01...
+Final Test acc: 0.1000
+_____________________
+Done.
