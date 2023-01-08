@@ -90,7 +90,6 @@ class Encoder(nn.Module):
             hidden_size,
             self.hidden_size,
             bidirectional=True,
-            batch_first=True,
         )
         self.dropout = nn.Dropout(self.dropout)
 
@@ -109,15 +108,20 @@ class Encoder(nn.Module):
         # - Use torch.nn.utils.rnn.pad_packed_sequence to unpack the packed sequences
         #   (after passing them to the LSTM)
         #############################################
-        raise NotImplementedError
+        padding = torch.ones(src.shape[0]).reshape(-1, 1)
+        src = torch.cat((padding, src), dim=1).long()
+        emb = self.dropout(self.embedding(src))
+        emb = nn.utils.rnn.pack_padded_sequence(emb, lengths+1, batch_first=True, enforce_sorted=False)
+        output, final_hidden = self.lstm(emb)
+        output, _ = nn.utils.rnn.pad_packed_sequence(output, batch_first=True)
+        enc_output = self.dropout(output)
         #############################################
         # END OF YOUR CODE
         #############################################
         # enc_output: (batch_size, max_src_len, hidden_size)
         # final_hidden: tuple with 2 tensors
         # each tensor is (num_layers * num_directions, batch_size, hidden_size)
-        # TODO: Uncomment the following line when you implement the forward pass
-        # return enc_output, final_hidden
+        return enc_output, final_hidden
 
 
 class Decoder(nn.Module):
@@ -180,15 +184,26 @@ class Decoder(nn.Module):
         #         src_lengths,
         #     )
         #############################################
-        raise NotImplementedError
+        encoder_outputs = torch.transpose(encoder_outputs, 0, 1)
+        emb = self.dropout(self.embedding(tgt[:,:-1]))
+        emb = nn.utils.rnn.pack_padded_sequence(emb, src_lengths+1, batch_first=True, enforce_sorted=False)
+        outputs, dec_state = self.lstm(emb, dec_state)
+        outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=True)
+        outputs = self.dropout(outputs)
+        if self.attn is not None:
+            outputs = self.attn(
+                outputs,
+                encoder_outputs,
+                src_lengths,
+            )
+        outputs = outputs.contiguous().view(-1, self.lstm.hidden_size)
         #############################################
         # END OF YOUR CODE
         #############################################
         # outputs: (batch_size, max_tgt_len, hidden_size)
         # dec_state: tuple with 2 tensors
         # each tensor is (num_layers, batch_size, hidden_size)
-        # TODO: Uncomment the following line when you implement the forward pass
-        # return outputs, dec_state
+        return outputs, dec_state
 
 
 class Seq2Seq(nn.Module):
@@ -218,9 +233,9 @@ class Seq2Seq(nn.Module):
 
         if dec_hidden is None:
             dec_hidden = final_enc_state
-
+            
         output, dec_hidden = self.decoder(
             tgt, dec_hidden, encoder_outputs, src_lengths
         )
-
+        
         return self.generator(output), dec_hidden

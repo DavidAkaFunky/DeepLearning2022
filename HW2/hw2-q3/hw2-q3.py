@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from data import collate_samples, MTDataset, PAD_IDX, SOS_IDX, EOS_IDX
 from models import Encoder, Decoder, Seq2Seq, Attention, reshape_state
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cpu"
 
 def configure_seed(seed):
     random.seed(seed)
@@ -109,6 +109,7 @@ def test(model, data_iter, data_type, examples_idx=None):
             final_seq = [tgt_pred.view(-1)]
 
             encoder_outputs, final_enc_state = model.encoder(src, src_lengths)
+            print(tgt_pred.shape)
             dec_state = final_enc_state
 
             if dec_state[0].shape[0] == 2:
