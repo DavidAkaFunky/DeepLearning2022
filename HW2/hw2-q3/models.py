@@ -108,10 +108,11 @@ class Encoder(nn.Module):
         # - Use torch.nn.utils.rnn.pad_packed_sequence to unpack the packed sequences
         #   (after passing them to the LSTM)
         #############################################
-        padding = torch.ones(src.shape[0]).reshape(-1, 1)
-        src = torch.cat((padding, src), dim=1).long()
+        #padding = torch.ones(src.shape[0]).reshape(-1, 1)
+        #src = torch.cat((padding, src), dim=1).long()
         emb = self.dropout(self.embedding(src))
-        emb = nn.utils.rnn.pack_padded_sequence(emb, lengths+1, batch_first=True, enforce_sorted=False)
+        #Switch to lengths+1 if padding added
+        emb = nn.utils.rnn.pack_padded_sequence(emb, lengths, batch_first=True, enforce_sorted=False)
         output, final_hidden = self.lstm(emb)
         output, _ = nn.utils.rnn.pad_packed_sequence(output, batch_first=True)
         enc_output = self.dropout(output)
@@ -184,11 +185,10 @@ class Decoder(nn.Module):
         #         src_lengths,
         #     )
         #############################################
-        encoder_outputs = torch.transpose(encoder_outputs, 0, 1)
-        emb = self.dropout(self.embedding(tgt[:,:-1]))
-        emb = nn.utils.rnn.pack_padded_sequence(emb, src_lengths+1, batch_first=True, enforce_sorted=False)
+        
+        # Do we need to use padding?
+        emb = self.dropout(self.embedding(tgt[:,:-1])) # That or tgt[:,1:]
         outputs, dec_state = self.lstm(emb, dec_state)
-        outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=True)
         outputs = self.dropout(outputs)
         if self.attn is not None:
             outputs = self.attn(

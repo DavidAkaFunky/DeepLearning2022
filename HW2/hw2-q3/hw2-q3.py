@@ -95,6 +95,7 @@ def test(model, data_iter, data_type, examples_idx=None):
             src_lengths = (src != PAD_IDX).sum(1)
             src, tgt = src.to(device), tgt.to(device)
             src_lengths = src_lengths.to(device)
+            print(jj, src, tgt)
 
             # Tensor with start symbol index
             tgt_pred = torch.full(
@@ -104,12 +105,13 @@ def test(model, data_iter, data_type, examples_idx=None):
                 device=device,
             )
 
+            print(tgt_pred)
+
             i = 1
             stop = False
             final_seq = [tgt_pred.view(-1)]
 
             encoder_outputs, final_enc_state = model.encoder(src, src_lengths)
-            print(tgt_pred.shape)
             dec_state = final_enc_state
 
             if dec_state[0].shape[0] == 2:
