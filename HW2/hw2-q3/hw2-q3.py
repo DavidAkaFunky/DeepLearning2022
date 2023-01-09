@@ -95,7 +95,6 @@ def test(model, data_iter, data_type, examples_idx=None):
             src_lengths = (src != PAD_IDX).sum(1)
             src, tgt = src.to(device), tgt.to(device)
             src_lengths = src_lengths.to(device)
-            print(jj, src, tgt)
 
             # Tensor with start symbol index
             tgt_pred = torch.full(
@@ -104,8 +103,6 @@ def test(model, data_iter, data_type, examples_idx=None):
                 dtype=torch.long,
                 device=device,
             )
-
-            print(tgt_pred)
 
             i = 1
             stop = False
@@ -259,7 +256,7 @@ def main():
     plt.ylabel("Error Rate")
     plt.legend()
     plt.savefig(
-        "attn_%s_err_rate.pdf" % (str(opt.use_attn),),
+        "attn_%s_err_rate.png" % (str(opt.use_attn),),
         bbox_inches="tight",
     )
 

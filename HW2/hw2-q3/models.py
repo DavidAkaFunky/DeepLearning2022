@@ -110,6 +110,7 @@ class Encoder(nn.Module):
         #############################################
         #padding = torch.ones(src.shape[0]).reshape(-1, 1)
         #src = torch.cat((padding, src), dim=1).long()
+        #print("SRC" + str(src))
         emb = self.dropout(self.embedding(src))
         #Switch to lengths+1 if padding added
         emb = nn.utils.rnn.pack_padded_sequence(emb, lengths, batch_first=True, enforce_sorted=False)
@@ -185,9 +186,12 @@ class Decoder(nn.Module):
         #         src_lengths,
         #     )
         #############################################
-        
+        #print("TGT" + str(tgt))
         # Do we need to use padding?
-        emb = self.dropout(self.embedding(tgt[:,:-1])) # That or tgt[:,1:]
+        if len(tgt.shape) == 1:
+            tgt = tgt.unsqueeze(0)
+        tgt = tgt[:,:-1] if tgt.shape[1] > 1 else tgt # tgt[:,:-1] or tgt[:,1:]
+        emb = self.dropout(self.embedding(tgt))
         outputs, dec_state = self.lstm(emb, dec_state)
         outputs = self.dropout(outputs)
         if self.attn is not None:
