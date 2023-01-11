@@ -78,12 +78,12 @@ def train(data, model, lr, n_epochs, padding_idx):
 
         val_err_rates.append(val_err_rate)
 
-    test_err_rate = test(model, test_iter, "test", examples_idx=[42, 233, 512])
+    test_err_rate = test(model, test_iter, "test")
 
     return (val_err_rates, test_err_rate)
 
 
-def test(model, data_iter, data_type, examples_idx=None):
+def test(model, data_iter, data_type):
     # Test the Model
     model.eval()
     error_rates = []
@@ -155,13 +155,8 @@ def test(model, data_iter, data_type, examples_idx=None):
     print(dt_str + " Error Rate of the model: %.4f" % (mean_error_rate))
 
     model.train()
-
-    if examples_idx is not None:
-        for idx in examples_idx:
-            src_str = data_iter.dataset.pairs[idx][0]
-            print('true src: "%s"' % (src_str,))
-            print('true tgt: "%s"' % (true_strs[idx],))
-            print('pred tgt: "%s"' % (pred_strs[idx],))
+    print(len([idx for idx in range(len(pred_strs)) if true_strs[idx] == pred_strs[idx]]), "correct in", len(pred_strs))
+    print("-" * 50)
 
     return mean_error_rate
 

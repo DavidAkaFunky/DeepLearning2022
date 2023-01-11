@@ -1,0 +1,207 @@
+Loading data...
+Training...
+Epoch: [1/50], Loss: 1.5122
+Validation Error Rate of the model: 0.6090
+3 correct in 1000
+--------------------------------------------------
+Epoch: [2/50], Loss: 1.2538
+Validation Error Rate of the model: 0.5433
+7 correct in 1000
+--------------------------------------------------
+Epoch: [3/50], Loss: 1.2556
+Validation Error Rate of the model: 0.5178
+15 correct in 1000
+--------------------------------------------------
+Epoch: [4/50], Loss: 1.0272
+Validation Error Rate of the model: 0.4813
+24 correct in 1000
+--------------------------------------------------
+Epoch: [5/50], Loss: 1.0239
+Validation Error Rate of the model: 0.5097
+17 correct in 1000
+--------------------------------------------------
+Epoch: [6/50], Loss: 1.0532
+Validation Error Rate of the model: 0.4863
+34 correct in 1000
+--------------------------------------------------
+Epoch: [7/50], Loss: 0.9000
+Validation Error Rate of the model: 0.4706
+39 correct in 1000
+--------------------------------------------------
+Epoch: [8/50], Loss: 0.8953
+Validation Error Rate of the model: 0.4609
+40 correct in 1000
+--------------------------------------------------
+Epoch: [9/50], Loss: 1.0612
+Validation Error Rate of the model: 0.4451
+56 correct in 1000
+--------------------------------------------------
+Epoch: [10/50], Loss: 0.9138
+Validation Error Rate of the model: 0.4540
+52 correct in 1000
+--------------------------------------------------
+Epoch: [11/50], Loss: 0.9675
+Validation Error Rate of the model: 0.4517
+66 correct in 1000
+--------------------------------------------------
+Epoch: [12/50], Loss: 0.9599
+Validation Error Rate of the model: 0.4426
+65 correct in 1000
+--------------------------------------------------
+Epoch: [13/50], Loss: 0.8493
+Validation Error Rate of the model: 0.4324
+73 correct in 1000
+--------------------------------------------------
+Epoch: [14/50], Loss: 0.7899
+Validation Error Rate of the model: 0.4273
+83 correct in 1000
+--------------------------------------------------
+Epoch: [15/50], Loss: 0.8227
+Validation Error Rate of the model: 0.4260
+80 correct in 1000
+--------------------------------------------------
+Epoch: [16/50], Loss: 0.8001
+Validation Error Rate of the model: 0.4239
+84 correct in 1000
+--------------------------------------------------
+Epoch: [17/50], Loss: 0.6919
+Validation Error Rate of the model: 0.4171
+88 correct in 1000
+--------------------------------------------------
+Epoch: [18/50], Loss: 0.7366
+Validation Error Rate of the model: 0.3985
+106 correct in 1000
+--------------------------------------------------
+Epoch: [19/50], Loss: 0.6759
+Validation Error Rate of the model: 0.3935
+111 correct in 1000
+--------------------------------------------------
+Epoch: [20/50], Loss: 0.6873
+Validation Error Rate of the model: 0.4031
+114 correct in 1000
+--------------------------------------------------
+Epoch: [21/50], Loss: 0.7210
+Validation Error Rate of the model: 0.3969
+126 correct in 1000
+--------------------------------------------------
+Epoch: [22/50], Loss: 0.6737
+Validation Error Rate of the model: 0.3936
+135 correct in 1000
+--------------------------------------------------
+Epoch: [23/50], Loss: 0.7521
+Validation Error Rate of the model: 0.3961
+134 correct in 1000
+--------------------------------------------------
+Epoch: [24/50], Loss: 0.7099
+Validation Error Rate of the model: 0.3893
+138 correct in 1000
+--------------------------------------------------
+Epoch: [25/50], Loss: 0.7322
+Validation Error Rate of the model: 0.3818
+150 correct in 1000
+--------------------------------------------------
+Epoch: [26/50], Loss: 0.6962
+Validation Error Rate of the model: 0.3879
+137 correct in 1000
+--------------------------------------------------
+Epoch: [27/50], Loss: 0.6853
+Validation Error Rate of the model: 0.3779
+154 correct in 1000
+--------------------------------------------------
+Epoch: [28/50], Loss: 0.6562
+Validation Error Rate of the model: 0.3762
+156 correct in 1000
+--------------------------------------------------
+Epoch: [29/50], Loss: 0.6521
+Validation Error Rate of the model: 0.3779
+152 correct in 1000
+--------------------------------------------------
+Epoch: [30/50], Loss: 0.6073
+Validation Error Rate of the model: 0.3668
+169 correct in 1000
+--------------------------------------------------
+Epoch: [31/50], Loss: 0.6579
+Validation Error Rate of the model: 0.3673
+168 correct in 1000
+--------------------------------------------------
+Epoch: [32/50], Loss: 0.6847
+Validation Error Rate of the model: 0.3564
+190 correct in 1000
+--------------------------------------------------
+Epoch: [33/50], Loss: 0.6979
+Validation Error Rate of the model: 0.3610
+166 correct in 1000
+--------------------------------------------------
+Epoch: [34/50], Loss: 0.7075
+Validation Error Rate of the model: 0.3657
+171 correct in 1000
+--------------------------------------------------
+Epoch: [35/50], Loss: 0.6895
+Validation Error Rate of the model: 0.3503
+193 correct in 1000
+--------------------------------------------------
+Epoch: [36/50], Loss: 0.5747
+Validation Error Rate of the model: 0.3503
+194 correct in 1000
+--------------------------------------------------
+Epoch: [37/50], Loss: 0.6536
+Validation Error Rate of the model: 0.3450
+192 correct in 1000
+--------------------------------------------------
+Epoch: [38/50], Loss: 0.6644
+Validation Error Rate of the model: 0.3528
+188 correct in 1000
+--------------------------------------------------
+Epoch: [39/50], Loss: 0.6417
+Validation Error Rate of the model: 0.3532
+198 correct in 1000
+--------------------------------------------------
+Epoch: [40/50], Loss: 0.4659
+Validation Error Rate of the model: 0.3432
+194 correct in 1000
+--------------------------------------------------
+Epoch: [41/50], Loss: 0.6312
+Validation Error Rate of the model: 0.3436
+206 correct in 1000
+--------------------------------------------------
+Epoch: [42/50], Loss: 0.5903
+Validation Error Rate of the model: 0.3453
+209 correct in 1000
+--------------------------------------------------
+Epoch: [43/50], Loss: 0.6595
+Validation Error Rate of the model: 0.3487
+195 correct in 1000
+--------------------------------------------------
+Epoch: [44/50], Loss: 0.5640
+Validation Error Rate of the model: 0.3390
+216 correct in 1000
+--------------------------------------------------
+Epoch: [45/50], Loss: 0.4638
+Validation Error Rate of the model: 0.3369
+224 correct in 1000
+--------------------------------------------------
+Epoch: [46/50], Loss: 0.6082
+Validation Error Rate of the model: 0.3366
+219 correct in 1000
+--------------------------------------------------
+Epoch: [47/50], Loss: 0.6223
+Validation Error Rate of the model: 0.3342
+217 correct in 1000
+--------------------------------------------------
+Epoch: [48/50], Loss: 0.5125
+Validation Error Rate of the model: 0.3302
+218 correct in 1000
+--------------------------------------------------
+Epoch: [49/50], Loss: 0.5893
+Validation Error Rate of the model: 0.3331
+223 correct in 1000
+--------------------------------------------------
+Epoch: [50/50], Loss: 0.5594
+Validation Error Rate of the model: 0.3398
+227 correct in 1000
+--------------------------------------------------
+Test Error Rate of the model: 0.3592
+193 correct in 1000
+--------------------------------------------------
+Final validation error rate: 0.3398
+Test error rate: 0.3592

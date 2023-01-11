@@ -202,7 +202,6 @@ class Decoder(nn.Module):
                 encoder_outputs,
                 src_lengths,
             )
-        outputs = outputs.contiguous().view(-1, self.lstm.hidden_size)
         #############################################
         # END OF YOUR CODE
         #############################################
