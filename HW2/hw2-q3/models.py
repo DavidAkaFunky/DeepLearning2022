@@ -47,7 +47,8 @@ class Attention(nn.Module):
         # - Use torch.tanh to do the tanh
         # - Use torch.masked_fill to do the masking of the padding tokens
         #############################################
-        raise NotImplementedError
+        #raise NotImplementedError
+        scores = torch.transpose(torch.bmm(torch.transpose(self.linear_in, 0, 1), query), 0, 1)
         #############################################
         # END OF YOUR CODE
         #############################################
