@@ -30,7 +30,7 @@ class Attention(nn.Module):
         src_lengths,
     ):
         # query: (batch_size, 1, hidden_dim)
-        # encoder_outputs: (batch_size, max_src_len, hidden_dim)
+        # encoder_outputs: (batch_size, max_src_len, hidden_dim) -> context
         # src_lengths: (batch_size)
         # we will need to use this mask to assign float("-inf") in the attention scores
         # of the padding tokens (such that the output of the softmax is 0 in those positions)
@@ -47,14 +47,19 @@ class Attention(nn.Module):
         # - Use torch.tanh to do the tanh
         # - Use torch.masked_fill to do the masking of the padding tokens
         #############################################
+        z = self.linear_in(query)
+        attn_scores = torch.bmm(z, encoder_outputs.transpose(1, 2))
+        attn_scores = attn_scores.masked_fill_(src_seq_mask.unsqueeze(1), 0)
+        attn_weights = torch.softmax(attn_scores, 2)
+        c = torch.bmm(attn_weights, encoder_outputs)
+        attn_out = torch.tanh(self.linear_out((torch.cat([query, c], dim=2))))
         #raise NotImplementedError
-        scores = torch.transpose(torch.bmm(torch.transpose(self.linear_in, 0, 1), query), 0, 1)
         #############################################
         # END OF YOUR CODE
         #############################################
         # attn_out: (batch_size, 1, hidden_size)
         # TODO: Uncomment the following line when you implement the forward pass
-        # return attn_out
+        return attn_out
 
     def sequence_mask(self, lengths):
         """
