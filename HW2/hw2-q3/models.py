@@ -109,11 +109,7 @@ class Encoder(nn.Module):
         # - Use torch.nn.utils.rnn.pad_packed_sequence to unpack the packed sequences
         #   (after passing them to the LSTM)
         #############################################
-        #padding = torch.ones(src.shape[0]).reshape(-1, 1)
-        #src = torch.cat((padding, src), dim=1).long()
-        #print("SRC" + str(src))
         emb = self.dropout(self.embedding(src))
-        #Switch to lengths+1 if padding added
         emb = nn.utils.rnn.pack_padded_sequence(emb, lengths, batch_first=True, enforce_sorted=False)
         output, final_hidden = self.lstm(emb)
         output, _ = nn.utils.rnn.pad_packed_sequence(output, batch_first=True)
