@@ -142,7 +142,7 @@ class Decoder(nn.Module):
         # if they are of size (num_layers*num_directions, batch_size, hidden_size)
         if dec_state[0].shape[0] == 2:
             dec_state = reshape_state(dec_state)
-        tgt = tgt[:,:-1] if tgt.shape[1] > 1 else tgt # tgt[:,:-1] or tgt[:,1:]
+        tgt = tgt[:,:-1] if tgt.shape[1] > 1 else tgt
         emb = self.dropout(self.embedding(tgt))
         outputs, dec_state = self.lstm(emb, dec_state)
         if self.attn is not None:
