@@ -26,7 +26,6 @@ class CNN(nn.Module):
         https://pytorch.org/docs/stable/nn.html
         """
         super(CNN, self).__init__()
-        # What padding to use?
         self.conv1 = nn.Conv2d(1, 8, kernel_size=5, padding=2)
         self.conv2 = nn.Conv2d(8, 16, kernel_size=3)
         self.dropout_prob = dropout_prob
